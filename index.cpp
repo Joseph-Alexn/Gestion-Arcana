@@ -3,11 +3,61 @@
 
 using namespace std;
 
+#pragma once
+// Contiene solo el payload
+template <typename T>
+class BaseNode
+{
+public:
+    T payload;
+
+    BaseNode(T payload)
+    {
+        this->payload = payload;
+    }
+
+    BaseNode()
+    {
+        this->payload = T();
+    }
+};
+
+// Nodo con un solo enlace al siguiente
+template <typename T>
+class SimpleLinkNode : public BaseNode<T>
+{
+public:
+    SimpleLinkNode<T> *next;
+
+    SimpleLinkNode() : BaseNode<T>()
+    {
+        next = nullptr;
+    }
+
+    SimpleLinkNode(T payload) : BaseNode<T>(payload)
+    {
+        next = nullptr;
+    }
+};
+
+// Nodo con doble enlace, siguiente y previo
+template <typename T>
+class DoubleLinkNode : public BaseNode<T>
+{
+public:
+    DoubleLinkNode<T> *prev;
+    DoubleLinkNode<T> *next;
+
+    DoubleLinkNode(T payload) : BaseNode<T>(payload)
+    {
+        next = nullptr;
+        prev = nullptr;
+    }
+};
+
 // El #ifndef garantiza que este codigo solo se ejectuta cuando no este definido el macro LIST_V4
 #ifndef LIST_V4
 #define LIST_V4 // Aqui lo definimos, asi que la definicion de la clase solo se va a realizar una sola vez, esto evita redefinicion de cosas y redundancia ciclica
-
-#include "node.h"
 
 // En esta version final el nodo tiene dos apuntadores, uno al siguiente y uno al nodo previo, debido a esto podemos realizar todas las operaciones en O(1)
 // Ademas podemos decidir si insertamos antes o despues del nodo seleccionado como iterador

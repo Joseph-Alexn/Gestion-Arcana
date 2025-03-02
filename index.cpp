@@ -3,226 +3,120 @@
 
 using namespace std;
 
-#pragma once
-// Contiene solo el payload
 template <typename T>
-class BaseNode
+class Lista
 {
-public:
-    T payload;
-
-    BaseNode(T payload)
-    {
-        this->payload = payload;
-    }
-
-    BaseNode()
-    {
-        this->payload = T();
-    }
-};
-
-// Nodo con un solo enlace al siguiente
-template <typename T>
-class SimpleLinkNode : public BaseNode<T>
-{
-public:
-    SimpleLinkNode<T> *next;
-
-    SimpleLinkNode() : BaseNode<T>()
-    {
-        next = nullptr;
-    }
-
-    SimpleLinkNode(T payload) : BaseNode<T>(payload)
-    {
-        next = nullptr;
-    }
-};
-
-// Nodo con doble enlace, siguiente y previo
-template <typename T>
-class DoubleLinkNode : public BaseNode<T>
-{
-public:
-    DoubleLinkNode<T> *prev;
-    DoubleLinkNode<T> *next;
-
-    DoubleLinkNode(T payload) : BaseNode<T>(payload)
-    {
-        next = nullptr;
-        prev = nullptr;
-    }
-};
-
-// El #ifndef garantiza que este codigo solo se ejectuta cuando no este definido el macro LIST_V4
-#ifndef LIST_V4
-#define LIST_V4 // Aqui lo definimos, asi que la definicion de la clase solo se va a realizar una sola vez, esto evita redefinicion de cosas y redundancia ciclica
-
-// En esta version final el nodo tiene dos apuntadores, uno al siguiente y uno al nodo previo, debido a esto podemos realizar todas las operaciones en O(1)
-// Ademas podemos decidir si insertamos antes o despues del nodo seleccionado como iterador
-template <typename T>
-class ListV4
-{
-public:
-    typedef DoubleLinkNode<T> *iterator;
-
-    // Construye una lista vacia
-    ListV4();
-
-    ~ListV4();
-
-    iterator first(); // En este caso esta funcion no puede ser const porque podemos alterar first a travez de ella
-    // ya que retorna la direccion de memoria de la variable _first
-
-    iterator last();
-
-    T *get(iterator i) const;
-
-    void next(iterator &i) const;
-
-    void prev(iterator &i) const;
-
-    bool isEmpty() const;
-
-    int size() const;
-
-    void insert(iterator i, T payload, bool before = true);
-
-    void deleteNode(iterator i);
-
 private:
-    iterator _first;
-    iterator _last;
-    int _size;
+    int longitud;
+    T *ptr_primero;
+    T *ptr_ultimo;
+public:
+    Lista()
+    {
+        this->longitud = 0;
+        this->ptr_primero = nullptr;
+        this->ptr_ultimo = nullptr;
+    };
+    ~Lista()
+    {
+        clear(); //Esto es un poco innecesario
+    };
+    void insertarFinal(T elemento)
+    {
+        if (estaVacia())
+        {
+            T *nuevo = new T(elemento);
+            this->ptr_primero = nuevo;
+            this->ptr_ultimo = nuevo;
+            return;
+        }
+        T *aux = new T(elemento);
+        this->ptr_ultimo = aux;
+        this->longitud++;
+        return;
+    };
+    void insertarInicio(T elemento)
+    {
+        if (estaVacia())
+        {
+            T *nuevo = new T(elemento);
+            this->ptr_primero = nuevo;
+            this->ptr_ultimo = nuevo;
+            return;
+        }
+        T *nuevo = new T(elemento);
+        T *aux = this->ptr_primero;
+        nuevo->ptr_siguiente = aux;
+        this->ptr_primero = nuevo;
+        this->longitud++;
+        return;
+    };
+    bool estaVacia()
+    {
+        return this->ptr_primero == nullptr;
+    }
+    void pop()
+    {
+        if (estaVacia())
+        {
+            return;
+        }
+    
+        T *ptr_aux = this->ptr_primero;
+        this->ptr_primero = this->ptr_primero->ptr_siguiente;
+        delete ptr_aux;
+        this->longitud--;
+        return;
+    }
+    void clear()
+    {
+        while (!estaVacia())
+        {
+            pop();
+        }
+    }
+};
+class Vertice
+{
+public:
+    char runa;
+    Lista<Arista> aristas;
+    Vertice(char runa)
+    {
+        this->runa = runa;
+        this->aristas = Lista<Arista>();
+    };
+    ~Vertice()
+    {
+
+    };
 };
 
-template <typename T>
-ListV4<T>::ListV4()
+class Arista
 {
-    this->_first = nullptr;
-    this->_last = nullptr;
-}
-
-template <typename T>
-ListV4<T>::~ListV4()
-{
-    while (!this->isEmpty())
+private:
+    int vertice_ady;
+    float peso;
+    Arista* ptr_siguiente;
+public:
+    Arista(int vertice_ady, float peso)
     {
-        this->deleteNode(this->first());
-    }
-}
-
-template <typename T>
-typename ::ListV4<T>::iterator ListV4<T>::first()
-{
-    return this->_first;
-}
-
-template <typename T>
-typename ::ListV4<T>::iterator ListV4<T>::last()
-{
-    return this->_last;
-}
-
-template <typename T>
-T *ListV4<T>::get(iterator i) const
-{
-    if (i == nullptr)
-        return nullptr;
-
-    return &i->payload;
-}
-
-template <typename T>
-void ListV4<T>::next(iterator &i) const
-{
-    if (i == nullptr)
-        return;
-    i = i->next;
-}
-
-template <typename T>
-void ListV4<T>::prev(iterator &i) const
-{
-    if (i == nullptr)
-        return;
-    i = i->prev;
-}
-
-template <typename T>
-bool ListV4<T>::isEmpty() const
-{
-    return this->_first == nullptr;
-}
-
-template <typename T>
-int ListV4<T>::size() const
-{
-    return this->_size;
-}
-
-template <typename T>
-void ListV4<T>::insert(iterator i, T payload, bool before)
-{
-    DoubleLinkNode<T> *newNode = new DoubleLinkNode<T>(payload);
-
-    this->_size++;
-
-    if (this->isEmpty())
+        this->vertice_ady = vertice_ady;
+        this->peso = peso;
+        this->ptr_siguiente = nullptr;
+    };
+    ~Arista()
     {
-        this->_first = newNode;
-        this->_last = newNode;
-        return;
-    }
 
-    if (before)
-    {
-        newNode->next = i;
-        newNode->prev = i->prev;
-        if (i->prev != nullptr)
-            i->prev->next = newNode;
+    };
+};
 
-        i->prev = newNode;
-
-        if (this->first() == i)
-            this->_first = newNode;
-
-        return;
-    }
-
-    newNode->next = i->next;
-    newNode->prev = i;
-    if (i->next != nullptr)
-        i->next->prev = newNode;
-
-    i->next = newNode;
-
-    if (this->last() == i)
-        this->_last = newNode;
-}
-
-template <typename T>
-void ListV4<T>::deleteNode(iterator i)
+class Hechizo
 {
-    if (i == nullptr)
-        return;
+public:
+    string nombreMago;
+    string nombreHechizo;
+    Vertice vertices[];
+};
 
-    this->_size--;
 
-    if (i == this->first())
-        this->_first = i->next;
-
-    if (i == this->last())
-        this->_last = i->prev;
-
-    if (i->prev != nullptr)
-        i->prev->next = i->next;
-
-    if (i->next != nullptr)
-        i->next->prev = i->prev;
-
-    delete i;
-}
-
-#endif // LIST_V4

@@ -2,14 +2,21 @@
 #include <fstream>
 
 using namespace std;
-
+template <typename T>
+struct Nodo
+{
+    T valor;
+    Nodo<T> *ptr_siguiente;
+    Nodo(T valor) : valor(valor), ptr_siguiente(nullptr) {}
+};
 template <typename T>
 class Lista
 {
 private:
     int longitud;
-    T *ptr_primero;
-    T *ptr_ultimo;
+    Nodo<T> *ptr_primero;
+    Nodo<T> *ptr_ultimo;
+
 public:
     Lista()
     {
@@ -19,37 +26,39 @@ public:
     };
     ~Lista()
     {
-        clear(); //Esto es un poco innecesario
+        clear(); // Esto es un poco innecesario
     };
     void insertarFinal(T elemento)
     {
         if (estaVacia())
         {
-            T *nuevo = new T(elemento);
+            Nodo<T> *nuevo = new Nodo<T>(elemento);
             this->ptr_primero = nuevo;
             this->ptr_ultimo = nuevo;
-            return;
         }
-        T *aux = new T(elemento);
-        this->ptr_ultimo = aux;
+        else
+        {
+            Nodo<T> *nuevo = new Nodo<T>(elemento);
+            this->ptr_ultimo->ptr_siguiente = nuevo;
+            this->ptr_ultimo = nuevo;
+        }
         this->longitud++;
-        return;
     };
     void insertarInicio(T elemento)
     {
         if (estaVacia())
         {
-            T *nuevo = new T(elemento);
+            Nodo<T> *nuevo = new Nodo<T>(elemento);
             this->ptr_primero = nuevo;
             this->ptr_ultimo = nuevo;
-            return;
         }
-        T *nuevo = new T(elemento);
-        T *aux = this->ptr_primero;
-        nuevo->ptr_siguiente = aux;
-        this->ptr_primero = nuevo;
+        else
+        {
+            Nodo<T> *nuevo = new Nodo<T>(elemento);
+            nuevo->ptr_siguiente = this->ptr_primero;
+            this->ptr_primero = nuevo;
+        }
         this->longitud++;
-        return;
     };
     bool estaVacia()
     {
@@ -61,8 +70,8 @@ public:
         {
             return;
         }
-    
-        T *ptr_aux = this->ptr_primero;
+
+        Nodo<T> *ptr_aux = this->ptr_primero;
         this->ptr_primero = this->ptr_primero->ptr_siguiente;
         delete ptr_aux;
         this->longitud--;
@@ -76,39 +85,34 @@ public:
         }
     }
 };
-class Vertice
-{
-public:
-    char runa;
-    Lista<Arista> aristas;
-    Vertice(char runa)
-    {
-        this->runa = runa;
-        this->aristas = Lista<Arista>();
-    };
-    ~Vertice()
-    {
-
-    };
-};
-
 class Arista
 {
 private:
     int vertice_ady;
     float peso;
-    Arista* ptr_siguiente;
+    Arista *ptr_siguiente;
+
 public:
     Arista(int vertice_ady, float peso)
     {
         this->vertice_ady = vertice_ady;
         this->peso = peso;
-        this->ptr_siguiente = nullptr;
+        this->ptr_siguiente = NULL;
     };
     ~Arista()
     {
-
-    };
+    }
+};
+class Vertice
+{
+public:
+    char runa;
+    Lista<Arista> aristas;
+    Vertice() : runa('\0'), aristas(Lista<Arista>()) {};
+    Vertice(char runa) : runa(runa), aristas(Lista<Arista>()) {};
+    ~Vertice()
+    {
+    }
 };
 
 class Hechizo
@@ -116,7 +120,30 @@ class Hechizo
 public:
     string nombreMago;
     string nombreHechizo;
-    Vertice vertices[];
+    Vertice *vertices;
+    int cantidadVertices;
+
+    Hechizo(int cantidadVertices)
+    {
+        this->nombreMago = "";
+        this->nombreHechizo = "";
+        this->cantidadVertices = cantidadVertices;
+        this->vertices = new Vertice[cantidadVertices];
+    }
+    ~Hechizo()
+    {
+        delete[] vertices;
+    }
+
+    Vertice &obtenerVertice(int indice)
+    {
+        if (indice < 0 || indice >= cantidadVertices)
+        {
+            cout << "Indice fuera de rango" << endl;
+        }
+        else
+        {
+            return vertices[indice];
+        }
+    }
 };
-
-

@@ -97,7 +97,7 @@ public:
     {
         this->vertice_ady = vertice_ady;
         this->peso = peso;
-        this->ptr_siguiente = NULL;
+        this->ptr_siguiente = nullptr;
     };
     ~Arista()
     {
@@ -147,3 +147,81 @@ public:
         }
     }
 };
+
+Hechizo Entrada(const char *nombreArchivo)
+{
+    ifstream archivo(nombreArchivo);
+    if (!archivo.is_open())
+    {
+        cout << "No se pudo abrir el archivo" << endl;
+        exit(1);
+    }
+
+    int numeroGrafos;
+    archivo >> numeroGrafos;
+
+    for (int i = 0; i < numeroGrafos; i++)
+    {
+        char nombreMago[100];
+        archivo.ignore();
+        archivo.getline(nombreMago, 100);
+
+        int cantidadVertices;
+        archivo >> cantidadVertices;
+        Hechizo hechizo(cantidadVertices);
+        hechizo.nombreMago = nombreMago;
+        hechizo.nombreHechizo = "Hechizo " + to_string(i + 1);
+
+        string runas;
+        archivo >> runas;
+
+        for (int j = 0; j < cantidadVertices; j++)
+        {
+            hechizo.obtenerVertice(j) = Vertice(runas[j]);
+        }
+
+        int numeroAristas;
+        archivo >> numeroAristas;
+
+        for (int j = 0; j < numeroAristas; j++)
+        {
+            int vertice1, vertice2;
+            float peso;
+
+            cout << "Leyendo arista #" << j + 1 << "..." << endl;
+            archivo >> vertice1 >> vertice2 >> peso;
+
+            if (archivo.fail())
+            {
+                cout << "Error al leer los datos de la arista" << endl;
+                return hechizo;
+            }
+
+            vertice1--;
+            vertice2--;
+
+            if (vertice1 >= 0 && vertice1 < cantidadVertices && vertice2 >= 0 && vertice2 < cantidadVertices)
+            {
+                hechizo.obtenerVertice(vertice1).aristas.insertarFinal(Arista(vertice2, peso));
+                hechizo.obtenerVertice(vertice2).aristas.insertarFinal(Arista(vertice1, peso));
+            }
+            else
+            {
+                cout << "Índice de arista fuera de rango: " << vertice1 + 1 << ", " << vertice2 + 1 << endl;
+            }
+        }
+
+        cout << "Mago: " << hechizo.nombreMago << endl;
+        cout << "Hechizo: " << hechizo.nombreHechizo << endl;
+        cout << "Cantidad de Vertices: " << hechizo.cantidadVertices << endl;
+    }
+
+    archivo.close();
+    return Hechizo(0);
+}
+
+int main()
+{
+    Entrada("spellList.in");
+    return 0;
+}

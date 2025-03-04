@@ -140,6 +140,7 @@ public:
         if (indice < 0 || indice >= cantidadVertices)
         {
             cout << "Indice fuera de rango" << endl;
+            return vertices[-1]; // Esto es un error
         }
         else
         {

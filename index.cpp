@@ -12,12 +12,11 @@ struct Nodo
 template <typename T>
 class Lista
 {
-private:
+public:
     int longitud;
     Nodo<T> *ptr_primero;
     Nodo<T> *ptr_ultimo;
 
-public:
     Lista()
     {
         this->longitud = 0;
@@ -87,12 +86,11 @@ public:
 };
 class Arista
 {
-private:
-    int vertice_ady;
+public:
+    int vertice_ady; //Indice del vertice adyacente
     float peso;
     Arista *ptr_siguiente;
 
-public:
     Arista(int vertice_ady, float peso)
     {
         this->vertice_ady = vertice_ady;
@@ -120,7 +118,7 @@ class Hechizo
 public:
     string nombreMago;
     string nombreHechizo;
-    Vertice *vertices;
+    Vertice *vertices; //Arreglo de vértices
     int cantidadVertices;
 
     Hechizo(int cantidadVertices)
@@ -219,6 +217,58 @@ Hechizo Entrada(const char *nombreArchivo)
 
     archivo.close();
     return Hechizo(0);
+}
+
+bool confluenciaValida(Hechizo hechizo) 
+{
+    //Chequear si hay un solo punto de confluencia
+    int sum = 0;
+    int punto_confluencia = 0;
+    for (int i = 0; i < hechizo.cantidadVertices; i++) 
+    {
+        if (hechizo.vertices[i].runa == 'A') 
+        {
+            sum++;
+            punto_confluencia = i;
+        };
+        if (sum > 1) 
+        {
+            return false;
+        }
+    }
+
+    //Chequear si el punto de confluencia tiene solo puntos de soporte energético adyacentes
+    Nodo<Arista> *iterador = hechizo.obtenerVertice(punto_confluencia).aristas.ptr_primero;
+    while (iterador != nullptr) 
+    {
+        if (hechizo.obtenerVertice(iterador->valor.vertice_ady).runa != 'B') 
+        {
+            return false;
+        }
+        iterador = iterador->ptr_siguiente;
+    }
+    return true;
+}
+
+bool tieneExcesoDeRunasElementales (Hechizo hechizo) 
+{
+    //Chequear si hay máximo 3 runas elementales
+    const int max = 3;
+    int sum = 0;
+    for (int i = 0; i < hechizo.cantidadVertices; i++) 
+    {
+        //Si la runa no es F, D, A o B, entonces es una runa elemental
+        if (hechizo.obtenerVertice(i).runa != 'F' && hechizo.obtenerVertice(i).runa != 'A' && 
+            hechizo.obtenerVertice(i).runa != 'B' && hechizo.obtenerVertice(i).runa != 'D') 
+        {
+            sum++;
+        }
+        if (sum > max)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 int main()

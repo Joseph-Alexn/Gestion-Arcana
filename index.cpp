@@ -271,6 +271,28 @@ bool tieneExcesoDeRunasElementales (Hechizo hechizo)
     return false;
 }
 
+bool runasCataliticasValidas (Hechizo hechizo)
+{
+    //Chequear si las runas cataliticas no estan conectadas a runas elementales
+    for (int i = 0; i < hechizo.cantidadVertices; i++)
+    {
+        if (hechizo.obtenerVertice(i).runa == 'D')
+        {
+            Nodo<Arista> *iterador = hechizo.obtenerVertice(i).aristas.ptr_primero;
+            while (iterador != nullptr)
+            {
+                if (hechizo.obtenerVertice(iterador->valor.vertice_ady).runa != 'A' &&
+                    hechizo.obtenerVertice(iterador->valor.vertice_ady).runa != 'B' &&
+                    hechizo.obtenerVertice(iterador->valor.vertice_ady).runa != 'F')
+                {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
+}
+
 int main()
 {
     Entrada("spellList.in");

@@ -287,6 +287,7 @@ bool runasCataliticasValidas (Hechizo hechizo)
                 {
                     return false;
                 }
+                iterador = iterador->ptr_siguiente;
             }
         }
     }

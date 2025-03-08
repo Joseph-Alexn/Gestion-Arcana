@@ -87,7 +87,7 @@ public:
 class Arista
 {
 public:
-    int vertice_ady; //Indice del vertice adyacente
+    int vertice_ady; // Indice del vertice adyacente
     float peso;
     Arista *ptr_siguiente;
 
@@ -118,7 +118,7 @@ class Hechizo
 public:
     string nombreMago;
     string nombreHechizo;
-    Vertice *vertices; //Arreglo de vértices
+    Vertice *vertices; // Arreglo de vértices
     int cantidadVertices;
 
     Hechizo(int cantidadVertices)
@@ -216,32 +216,48 @@ Hechizo Entrada(const char *nombreArchivo)
     }
 
     archivo.close();
+
+    ifstream archivo2("underInvestigation.in");
+    if (archivo2.is_open())
+    {
+        cout << "magos bajo investigacion: " << endl;
+        char nombreMago[100];
+        while (archivo2.getline(nombreMago, 100))
+        {
+            cout << nombreMago << endl;
+        }
+        archivo2.close();
+    }
+    else
+    {
+        cout << "No se pudo abrir el archivo" << endl;
+    }
     return Hechizo(0);
 }
 
-bool confluenciaValida(Hechizo hechizo) 
+bool confluenciaValida(Hechizo hechizo)
 {
-    //Chequear si hay un solo punto de confluencia
+    // Chequear si hay un solo punto de confluencia
     int sum = 0;
     int punto_confluencia = 0;
-    for (int i = 0; i < hechizo.cantidadVertices; i++) 
+    for (int i = 0; i < hechizo.cantidadVertices; i++)
     {
-        if (hechizo.vertices[i].runa == 'A') 
+        if (hechizo.vertices[i].runa == 'A')
         {
             sum++;
             punto_confluencia = i;
         };
-        if (sum > 1) 
+        if (sum > 1)
         {
             return false;
         }
     }
 
-    //Chequear si el punto de confluencia tiene solo puntos de soporte energético adyacentes
+    // Chequear si el punto de confluencia tiene solo puntos de soporte energético adyacentes
     Nodo<Arista> *iterador = hechizo.obtenerVertice(punto_confluencia).aristas.ptr_primero;
-    while (iterador != nullptr) 
+    while (iterador != nullptr)
     {
-        if (hechizo.obtenerVertice(iterador->valor.vertice_ady).runa != 'B') 
+        if (hechizo.obtenerVertice(iterador->valor.vertice_ady).runa != 'B')
         {
             return false;
         }
@@ -250,16 +266,16 @@ bool confluenciaValida(Hechizo hechizo)
     return true;
 }
 
-bool tieneExcesoDeRunasElementales (Hechizo hechizo) 
+bool excesoRunasElementales(Hechizo hechizo)
 {
-    //Chequear si hay máximo 3 runas elementales
+    // Chequear si hay máximo 3 runas elementales
     const int max = 3;
     int sum = 0;
-    for (int i = 0; i < hechizo.cantidadVertices; i++) 
+    for (int i = 0; i < hechizo.cantidadVertices; i++)
     {
-        //Si la runa no es F, D, A o B, entonces es una runa elemental
-        if (hechizo.obtenerVertice(i).runa != 'F' && hechizo.obtenerVertice(i).runa != 'A' && 
-            hechizo.obtenerVertice(i).runa != 'B' && hechizo.obtenerVertice(i).runa != 'D') 
+        // Si la runa no es F, D, A o B, entonces es una runa elemental
+        if (hechizo.obtenerVertice(i).runa != 'F' && hechizo.obtenerVertice(i).runa != 'A' &&
+            hechizo.obtenerVertice(i).runa != 'B' && hechizo.obtenerVertice(i).runa != 'D')
         {
             sum++;
         }
@@ -271,9 +287,9 @@ bool tieneExcesoDeRunasElementales (Hechizo hechizo)
     return false;
 }
 
-bool runasCataliticasValidas (Hechizo hechizo)
+bool runasCataliticasValidas(Hechizo hechizo)
 {
-    //Chequear si las runas cataliticas no estan conectadas a runas elementales
+    // Chequear si las runas cataliticas no estan conectadas a runas elementales
     for (int i = 0; i < hechizo.cantidadVertices; i++)
     {
         if (hechizo.obtenerVertice(i).runa == 'D')

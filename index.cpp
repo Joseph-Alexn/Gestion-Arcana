@@ -315,7 +315,7 @@ void procesarHechizo(Hechizo &hechizo)
     cout << "Hechizo procesado" << endl;
 }
 
-void Entrada(const char *nombreArchivo)
+Hechizo Entrada(const char *nombreArchivo)
 {
     ifstream archivo(nombreArchivo);
     if (!archivo.is_open())
@@ -382,9 +382,28 @@ void Entrada(const char *nombreArchivo)
 
     archivo.close();
     magosBajoInvestigacion();
+
+    return Hechizo(0);
 }
 int main()
 {
-    Entrada("spellList.in");
+    // Procesar el archivo de entrada y obtener el hechizo
+    Hechizo hechizo = Entrada("spellList.in");
+
+    // Acceder a la lista de aristas de un vértice específico
+    int indiceVertice = 0; // Vértice con índice 0
+    Vertice &vertice = hechizo.obtenerVertice(indiceVertice);
+
+    cout << "Aristas del vertice " << indiceVertice << " (Runa: " << vertice.runa << "):" << endl;
+
+    // Recorrer la lista de aristas
+    Nodo<Arista> *iterador = vertice.aristas.ptr_primero;
+    while (iterador != nullptr)
+    {
+        cout << "Arista hacia el vertice " << iterador->valor.vertice_ady
+             << " con peso " << iterador->valor.peso << endl;
+        iterador = iterador->ptr_siguiente;
+    }
+
     return 0;
 }

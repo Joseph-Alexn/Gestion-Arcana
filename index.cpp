@@ -239,7 +239,6 @@ bool runasCataliticasValidas(Hechizo &hechizo)
 }
 bool cicloValido(Vertice &vertice, const int origen)
 {
-    // Funcion auxiliar de DFS_CICLO para chequear si un camino dado es un ciclo valido
     Nodo<Arista> *iterador = vertice.aristas.ptr_primero;
     while (iterador != nullptr)
     {
@@ -252,45 +251,43 @@ bool cicloValido(Vertice &vertice, const int origen)
     return false;
 }
 
-int DFS_CICLO(Hechizo &hechizo, int vertice, bool visitados[], int longitud, int &longitudMaxima, const int origen)
+int DFS_CICLO(Hechizo &hechizo, int vertice, bool visitados[], float pesoAcumulado, float &pesoMaximo, const int origen)
 {
-    // Implementación de DFS para contar la longitud de un camino y devolver la máxima
     visitados[vertice] = true;
+
     Nodo<Arista> *iterador = hechizo.obtenerVertice(vertice).aristas.ptr_primero;
     while (iterador != nullptr)
     {
         int verticeAdy = iterador->valor.vertice_ady;
+        float pesoArista = iterador->valor.peso;
+
         if (!visitados[verticeAdy])
         {
-            DFS_CICLO(hechizo, verticeAdy, visitados, longitud + 1, longitudMaxima, origen);
+            DFS_CICLO(hechizo, verticeAdy, visitados, pesoAcumulado + pesoArista, pesoMaximo, origen);
         }
-        else if (verticeAdy == origen && longitud > 1)
+        else if (verticeAdy == origen && pesoAcumulado + pesoArista > pesoMaximo)
         {
-            if (cicloValido(hechizo.obtenerVertice(vertice), origen))
-            {
-                if (longitud + 1 > longitudMaxima)
-                {
-                    longitudMaxima = longitud + 1;
-                }
-            }
+            pesoMaximo = pesoAcumulado + pesoArista;
         }
+
         iterador = iterador->ptr_siguiente;
     }
+
     visitados[vertice] = false;
-    return longitudMaxima;
+    return pesoMaximo;
 }
 
-int encontrarCicloMasLargo(Hechizo &hechizo, int origen)
+float encontrarCicloMasLargo(Hechizo &hechizo, int origen)
 {
     bool *visitados = new bool[hechizo.cantidadVertices];
     for (int i = 0; i < hechizo.cantidadVertices; i++)
     {
         visitados[i] = false;
     }
-    int longitudMaxima = 0;
-    DFS_CICLO(hechizo, origen, visitados, 0, longitudMaxima, origen);
+    float pesoMaximo = 0.0f;
+    DFS_CICLO(hechizo, origen, visitados, 0.0f, pesoMaximo, origen);
     delete[] visitados;
-    return longitudMaxima;
+    return pesoMaximo;
 }
 
 void procesarHechizo(Hechizo &hechizo)
@@ -309,8 +306,8 @@ void procesarHechizo(Hechizo &hechizo)
         cout << "Runas cataliticas invalidas" << endl;
     }
 
-    int longitudCiclo = encontrarCicloMasLargo(hechizo, 0);
-    cout << "Longitud del ciclo mas largo: " << longitudCiclo << endl;
+    float pesoCiclo = encontrarCicloMasLargo(hechizo, 0);
+    cout << "Peso del ciclo mas largo: " << pesoCiclo << endl;
 
     cout << "Hechizo procesado" << endl;
 }
@@ -387,23 +384,6 @@ Hechizo Entrada(const char *nombreArchivo)
 }
 int main()
 {
-    // Procesar el archivo de entrada y obtener el hechizo
-    Hechizo hechizo = Entrada("spellList.in");
-
-    // Acceder a la lista de aristas de un vértice específico
-    int indiceVertice = 0; // Vértice con índice 0
-    Vertice &vertice = hechizo.obtenerVertice(indiceVertice);
-
-    cout << "Aristas del vertice " << indiceVertice << " (Runa: " << vertice.runa << "):" << endl;
-
-    // Recorrer la lista de aristas
-    Nodo<Arista> *iterador = vertice.aristas.ptr_primero;
-    while (iterador != nullptr)
-    {
-        cout << "Arista hacia el vertice " << iterador->valor.vertice_ady
-             << " con peso " << iterador->valor.peso << endl;
-        iterador = iterador->ptr_siguiente;
-    }
-
+    Entrada("spellList.in");
     return 0;
 }

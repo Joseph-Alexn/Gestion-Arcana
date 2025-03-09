@@ -310,6 +310,49 @@ bool runasCataliticasValidas(Hechizo hechizo)
     return true;
 }
 
+bool cicloValido(Vertice vertice, const int origen) {
+    // Funcion auxiliar de DFS_CICLO para chequear si un camino dado es un ciclo valido
+    Nodo<Arista> *iterador = vertice.aristas.ptr_primero;
+    while (iterador != nullptr)
+    {
+        if (iterador->valor.vertice_ady == origen)
+        {
+            return true;
+        }
+        iterador = iterador->ptr_siguiente;
+    }
+}
+
+int DFS_CICLO(Hechizo hechizo, int vertice, bool visitados[], int longitud, int& longitudMaxima, const int origen)
+{
+    // Implementación de DFS para contar la longitud de un camino y devolver la máxima
+    visitados[vertice] = true;
+    Nodo<Arista> *iterador = hechizo.obtenerVertice(vertice).aristas.ptr_primero;
+    for (int i = 0; i < hechizo.obtenerVertice(vertice).aristas.longitud; i++)
+    {
+        if (!visitados[iterador->valor.vertice_ady])
+        {
+            DFS_CICLO(hechizo, iterador->valor.vertice_ady, visitados, longitud + 1, longitudMaxima, origen);
+            iterador = iterador->ptr_siguiente;
+        }
+        else
+        {
+            iterador = iterador->ptr_siguiente;
+        }
+    }
+    // Comparar la solucion actual con la longitud maxima encontrada
+    if (cicloValido(hechizo.obtenerVertice(vertice), origen))
+    {
+        if (longitud + 1 > longitudMaxima)
+        {
+            longitudMaxima = longitud + 1;
+        }
+    }
+    // El Back del Tracking
+    visitados[vertice] = false;
+    return longitudMaxima;
+}
+
 int main()
 {
     Entrada("spellList.in");

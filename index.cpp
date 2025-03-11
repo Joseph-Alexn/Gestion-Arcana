@@ -198,22 +198,29 @@ bool confluenciaValida(Hechizo &hechizo)
     return true;
 }
 
-bool excesoRunasElementales(Hechizo &hechizo)
+bool excesoRunasElementales(Hechizo &hechizo, char &runaElemental, bool &esArcano)
 {
     const int max = 3;
     int sum = 0;
+    bool flag = false;
     for (int i = 0; i < hechizo.cantidadVertices; i++)
     {
         if (hechizo.obtenerVertice(i).runa != 'F' && hechizo.obtenerVertice(i).runa != 'A' &&
             hechizo.obtenerVertice(i).runa != 'B' && hechizo.obtenerVertice(i).runa != 'D')
         {
             sum++;
+            if (!flag) //Esto es para evitar que se haga la asignacion mas de una vez
+            {
+                runaElemental = hechizo.obtenerVertice(i).runa;
+                flag = true;
+            }
         }
         if (sum > max)
         {
             return true;
         }
     }
+    if (sum == 0) esArcano = true;
     return false;
 }
 bool runasCataliticasValidas(Hechizo &hechizo)
@@ -294,7 +301,25 @@ int encontrarCicloMasLargo(Hechizo &hechizo, int origen)
 
 void procesarHechizo(Hechizo &hechizo)
 {
+    // Si es ilegal se agrega al arreglo de hechizos ilegales
+    // En caso contrario, se agrega el de hechizos legales
+    // Cada arreglo contiene una lista de hechizos en cada vertice
+    // Cada posicion es un tipo de hechizo
+    // 0 Arcano - 1 Fuego - 2 Agua - 3 Tierra - 4 Aire - 5 Luz - 6 Oscuridad
+
     cout << "Procesando hechizo de " << hechizo.nombreMago << "..." << endl;
+    /*
+    bool esIlegal = false;
+    if (!confluenciaValida(hechizo) || excesoRunasElementales(hechizo) || !runasCataliticasValidas(hechizo)) 
+    {
+        esIlegal = true;
+    }
+    int longitudCiclo = encontrarCicloMasLargo(hechizo, 0);
+    if (longitudCiclo % 2 != 0)
+    {
+        esIlegal = true;
+    }
+    */
     if (!confluenciaValida(hechizo))
     {
         cout << "Confluencia invalida" << endl;

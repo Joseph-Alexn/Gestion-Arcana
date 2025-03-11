@@ -251,7 +251,7 @@ bool cicloValido(Vertice &vertice, const int origen)
     return false;
 }
 
-int DFS_CICLO(Hechizo &hechizo, int vertice, bool visitados[], float pesoAcumulado, float &pesoMaximo, const int origen)
+int DFS_CICLO(Hechizo &hechizo, int vertice, bool visitados[], int longitud, int &longitudMaxima, const int origen)
 {
     visitados[vertice] = true;
 
@@ -259,35 +259,37 @@ int DFS_CICLO(Hechizo &hechizo, int vertice, bool visitados[], float pesoAcumula
     while (iterador != nullptr)
     {
         int verticeAdy = iterador->valor.vertice_ady;
-        float pesoArista = iterador->valor.peso;
-
         if (!visitados[verticeAdy])
         {
-            DFS_CICLO(hechizo, verticeAdy, visitados, pesoAcumulado + pesoArista, pesoMaximo, origen);
+            DFS_CICLO(hechizo, verticeAdy, visitados, longitud + 1, longitudMaxima, origen);
         }
-        else if (verticeAdy == origen && pesoAcumulado + pesoArista > pesoMaximo)
+        else if (verticeAdy == origen && longitud > 1)
         {
-            pesoMaximo = pesoAcumulado + pesoArista;
+            if (cicloValido(hechizo.obtenerVertice(vertice), origen))
+            {
+                if (longitud + 1 > longitudMaxima)
+                {
+                    longitudMaxima = longitud + 1;
+                }
+            }
         }
-
         iterador = iterador->ptr_siguiente;
     }
-
     visitados[vertice] = false;
-    return pesoMaximo;
+    return longitudMaxima;
 }
 
-float encontrarCicloMasLargo(Hechizo &hechizo, int origen)
+int encontrarCicloMasLargo(Hechizo &hechizo, int origen)
 {
     bool *visitados = new bool[hechizo.cantidadVertices];
     for (int i = 0; i < hechizo.cantidadVertices; i++)
     {
         visitados[i] = false;
     }
-    float pesoMaximo = 0.0f;
-    DFS_CICLO(hechizo, origen, visitados, 0.0f, pesoMaximo, origen);
+    int longitudMaxima = 0;
+    DFS_CICLO(hechizo, origen, visitados, 0, longitudMaxima, origen);
     delete[] visitados;
-    return pesoMaximo;
+    return longitudMaxima;
 }
 
 void procesarHechizo(Hechizo &hechizo)
@@ -306,8 +308,8 @@ void procesarHechizo(Hechizo &hechizo)
         cout << "Runas cataliticas invalidas" << endl;
     }
 
-    float pesoCiclo = encontrarCicloMasLargo(hechizo, 0);
-    cout << "Peso del ciclo mas largo: " << pesoCiclo << endl;
+    int longitudCiclo = encontrarCicloMasLargo(hechizo, 0);
+    cout << "Longitud del ciclo mas largo: " << longitudCiclo << endl;
 
     cout << "Hechizo procesado" << endl;
 }

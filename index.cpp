@@ -25,7 +25,7 @@ public:
     };
     ~Lista()
     {
-        clear(); // Esto es un poco innecesario
+        clear();
     };
     void insertarFinal(T elemento)
     {
@@ -209,7 +209,7 @@ bool excesoRunasElementales(Hechizo &hechizo, char &runaElemental, bool &esArcan
             hechizo.obtenerVertice(i).runa != 'B' && hechizo.obtenerVertice(i).runa != 'D')
         {
             sum++;
-            if (!flag) //Esto es para evitar que se haga la asignacion mas de una vez
+            if (!flag)
             {
                 runaElemental = hechizo.obtenerVertice(i).runa;
                 flag = true;
@@ -220,7 +220,8 @@ bool excesoRunasElementales(Hechizo &hechizo, char &runaElemental, bool &esArcan
             return true;
         }
     }
-    if (sum == 0) esArcano = true;
+    if (sum == 0)
+        esArcano = true;
     return false;
 }
 bool runasCataliticasValidas(Hechizo &hechizo)
@@ -299,47 +300,201 @@ int encontrarCicloMasLargo(Hechizo &hechizo, int origen)
     return longitudMaxima;
 }
 
+int generarIdArista(int u, int v, int cantidadVertices)
+{
+    return min(u, v) * cantidadVertices + max(u, v);
+}
+
+bool esRunaElemental(char runa)
+{
+    return (runa == 'I' || runa == 'Q' || runa == 'T' || runa == 'V' || runa == 'L' || runa == 'O');
+}
+
+void DFS_CAMINO_PESADO(Hechizo &hechizo, int verticeActual, bool visitados[], bool aristasVisitadas[], float pesoAcumulado, float &pesoMaximo, int caminoActual[], int &longitudCaminoActual, int caminoMaximo[], int &longitudCaminoMaximo, bool runasElementalesVisitadas[])
+{
+    visitados[verticeActual] = true;
+    caminoActual[longitudCaminoActual++] = verticeActual;
+
+    if (esRunaElemental(hechizo.obtenerVertice(verticeActual).runa))
+    {
+        runasElementalesVisitadas[verticeActual] = true;
+    }
+
+    char runaActual = hechizo.obtenerVertice(verticeActual).runa;
+    if ((runaActual == 'D' || runaActual == 'F' || esRunaElemental(runaActual)) && longitudCaminoActual > 1)
+    {
+        if (pesoAcumulado > pesoMaximo)
+        {
+            pesoMaximo = pesoAcumulado;
+            longitudCaminoMaximo = longitudCaminoActual;
+
+            for (int i = 0; i < longitudCaminoActual; i++)
+            {
+                caminoMaximo[i] = caminoActual[i];
+            }
+        }
+
+        visitados[verticeActual] = false;
+        longitudCaminoActual--;
+        return;
+    }
+
+    Nodo<Arista> *iterador = hechizo.obtenerVertice(verticeActual).aristas.ptr_primero;
+    while (iterador != nullptr)
+    {
+        int verticeAdy = iterador->valor.vertice_ady;
+        float pesoArista = iterador->valor.peso;
+
+        int idArista = generarIdArista(verticeActual, verticeAdy, hechizo.cantidadVertices);
+
+        if (!aristasVisitadas[idArista])
+        {
+            char runaAdy = hechizo.obtenerVertice(verticeAdy).runa;
+            if (runaAdy == 'A' || runaAdy == 'B' || runaAdy == 'D' || runaAdy == 'F' || esRunaElemental(runaAdy))
+            {
+                if (esRunaElemental(runaAdy) && runasElementalesVisitadas[verticeAdy])
+                {
+                    iterador = iterador->ptr_siguiente;
+                    continue; // Saltar esta arista si la runa elemental ya fue visitada
+                }
+
+                aristasVisitadas[idArista] = true; // Marcar la arista como visitada
+
+                if (!visitados[verticeAdy])
+                {
+                    DFS_CAMINO_PESADO(hechizo, verticeAdy, visitados, aristasVisitadas, pesoAcumulado + pesoArista, pesoMaximo, caminoActual, longitudCaminoActual, caminoMaximo, longitudCaminoMaximo, runasElementalesVisitadas);
+                }
+
+                aristasVisitadas[idArista] = false; // Desmarcar la arista al retroceder
+            }
+        }
+        iterador = iterador->ptr_siguiente;
+    }
+
+    visitados[verticeActual] = false;
+    longitudCaminoActual--;
+
+    if (esRunaElemental(hechizo.obtenerVertice(verticeActual).runa))
+    {
+        runasElementalesVisitadas[verticeActual] = false;
+    }
+}
+
+void encontrarCaminoMasPesado(Hechizo &hechizo)
+{
+    bool *visitados = new bool[hechizo.cantidadVertices];
+    bool *aristasVisitadas = new bool[hechizo.cantidadVertices * hechizo.cantidadVertices];
+    bool *runasElementalesVisitadas = new bool[hechizo.cantidadVertices];
+    int *caminoActual = new int[hechizo.cantidadVertices];
+    int *caminoMaximo = new int[hechizo.cantidadVertices];
+    int longitudCaminoActual = 0;
+    int longitudCaminoMaximo = 0;
+    float pesoMaximo = -1;
+
+    for (int i = 0; i < hechizo.cantidadVertices; i++)
+    {
+        visitados[i] = false;
+        runasElementalesVisitadas[i] = false;
+    }
+    for (int i = 0; i < hechizo.cantidadVertices * hechizo.cantidadVertices; i++)
+    {
+        aristasVisitadas[i] = false;
+    }
+
+    int puntoConfluencia = -1;
+    for (int i = 0; i < hechizo.cantidadVertices; i++)
+    {
+        if (hechizo.obtenerVertice(i).runa == 'A')
+        {
+            puntoConfluencia = i;
+            break;
+        }
+    }
+
+    if (puntoConfluencia == -1)
+    {
+        cout << "No se encontró el punto de confluencia (A)." << endl;
+        return;
+    }
+
+    DFS_CAMINO_PESADO(hechizo, puntoConfluencia, visitados, aristasVisitadas, 0, pesoMaximo, caminoActual, longitudCaminoActual, caminoMaximo, longitudCaminoMaximo, runasElementalesVisitadas);
+
+    if (longitudCaminoMaximo > 0)
+    {
+        cout << "Camino mas pesado encontrado con peso: " << pesoMaximo << endl;
+        cout << "Camino: ";
+        for (int i = 0; i < longitudCaminoMaximo; i++)
+        {
+            cout << caminoMaximo[i] + 1 << " ";
+        }
+        cout << endl;
+    }
+    else
+    {
+        cout << "No se encontró ningún camino válido en el grafo." << endl;
+    }
+
+    delete[] visitados;
+    delete[] aristasVisitadas;
+    delete[] runasElementalesVisitadas;
+    delete[] caminoActual;
+    delete[] caminoMaximo;
+}
+// Si es ilegal se agrega al arreglo de hechizos ilegales
+// En caso contrario, se agrega el de hechizos legales
+// Cada arreglo contiene una lista de hechizos en cada vertice
+// Cada posicion es un tipo de hechizo
+// 0 Arcano - 1 Fuego - 2 Agua - 3 Tierra - 4 Aire - 5 Luz - 6 Oscuridad
+
 void procesarHechizo(Hechizo &hechizo)
 {
-    // Si es ilegal se agrega al arreglo de hechizos ilegales
-    // En caso contrario, se agrega el de hechizos legales
-    // Cada arreglo contiene una lista de hechizos en cada vertice
-    // Cada posicion es un tipo de hechizo
-    // 0 Arcano - 1 Fuego - 2 Agua - 3 Tierra - 4 Aire - 5 Luz - 6 Oscuridad
-
     cout << "Procesando hechizo de " << hechizo.nombreMago << "..." << endl;
-    /*
+
     bool esIlegal = false;
-    if (!confluenciaValida(hechizo) || excesoRunasElementales(hechizo) || !runasCataliticasValidas(hechizo)) 
-    {
-        esIlegal = true;
-    }
-    int longitudCiclo = encontrarCicloMasLargo(hechizo, 0);
-    if (longitudCiclo % 2 != 0)
-    {
-        esIlegal = true;
-    }
-    */
     if (!confluenciaValida(hechizo))
     {
+        esIlegal = true;
         cout << "Confluencia invalida" << endl;
     }
-    if (excesoRunasElementales(hechizo))
+
+    char runaElemental;
+    bool esArcano = false;
+    if (excesoRunasElementales(hechizo, runaElemental, esArcano))
     {
+        esIlegal = true;
         cout << "Exceso de runas elementales" << endl;
     }
+
     if (!runasCataliticasValidas(hechizo))
     {
+        esIlegal = true;
         cout << "Runas cataliticas invalidas" << endl;
     }
 
     int longitudCiclo = encontrarCicloMasLargo(hechizo, 0);
     cout << "Longitud del ciclo mas largo: " << longitudCiclo << endl;
 
+    if (longitudCiclo % 2 != 0)
+    {
+        esIlegal = true;
+        cout << "Ciclo de longitud impar" << endl;
+    }
+
+    encontrarCaminoMasPesado(hechizo);
+
+    if (esIlegal)
+    {
+        cout << "El hechizo es ilegal." << endl;
+    }
+    else
+    {
+        cout << "El hechizo es legal." << endl;
+    }
+
     cout << "Hechizo procesado" << endl;
 }
 
-Hechizo Entrada(const char *nombreArchivo)
+void Entrada(const char *nombreArchivo)
 {
     ifstream archivo(nombreArchivo);
     if (!archivo.is_open())
@@ -406,8 +561,6 @@ Hechizo Entrada(const char *nombreArchivo)
 
     archivo.close();
     magosBajoInvestigacion();
-
-    return Hechizo(0);
 }
 int main()
 {

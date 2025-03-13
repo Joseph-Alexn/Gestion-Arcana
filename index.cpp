@@ -380,7 +380,7 @@ void DFS_CAMINO_PESADO(Hechizo &hechizo, int verticeActual, bool visitados[], bo
     }
 }
 
-void encontrarCaminoMasPesado(Hechizo &hechizo)
+float encontrarCaminoMasPesado(Hechizo &hechizo)
 {
     bool *visitados = new bool[hechizo.cantidadVertices];
     bool *aristasVisitadas = new bool[hechizo.cantidadVertices * hechizo.cantidadVertices];
@@ -439,12 +439,45 @@ void encontrarCaminoMasPesado(Hechizo &hechizo)
     delete[] runasElementalesVisitadas;
     delete[] caminoActual;
     delete[] caminoMaximo;
+    return pesoMaximo;
 }
 // Si es ilegal se agrega al arreglo de hechizos ilegales
 // En caso contrario, se agrega el de hechizos legales
 // Cada arreglo contiene una lista de hechizos en cada vertice
 // Cada posicion es un tipo de hechizo
 // 0 Arcano - 1 Fuego - 2 Agua - 3 Tierra - 4 Aire - 5 Luz - 6 Oscuridad
+
+int asignarIndice(char runa)
+{
+    if (runa == '-') // Es arcano
+    {
+        return 0;
+    }
+    else if (runa == 'I') // Es de fuego
+    {
+        return 1;
+    }
+    else if (runa == 'Q') // Es de agua
+    {
+        return 2;
+    }
+    else if (runa == 'T') // Es de tierra
+    {
+        return 3;
+    }
+    else if (runa == 'V') // Es de aire
+    {
+        return 4;
+    }
+    else if (runa == 'L') // Es de luz
+    {
+        return 5;
+    }
+    else // Es de oscuridad
+    {
+        return 6;
+    }
+}
 
 void procesarHechizo(Hechizo &hechizo)
 {
@@ -457,7 +490,9 @@ void procesarHechizo(Hechizo &hechizo)
         cout << "Confluencia invalida" << endl;
     }
 
-    char runaElemental;
+    const char* tipoHechizo[] = {"", "Ignatum", "Aquos", "Terraminium", "Ventus", "Lux", "Tenebrae"};
+    string nombreHechizo;
+    char runaElemental = '-';
     bool esArcano = false;
     if (excesoRunasElementales(hechizo, runaElemental, esArcano))
     {
@@ -480,7 +515,7 @@ void procesarHechizo(Hechizo &hechizo)
         cout << "Ciclo de longitud impar" << endl;
     }
 
-    encontrarCaminoMasPesado(hechizo);
+    float caminoMasPesado = encontrarCaminoMasPesado(hechizo);
 
     if (esIlegal)
     {
@@ -491,11 +526,26 @@ void procesarHechizo(Hechizo &hechizo)
         cout << "El hechizo es legal." << endl;
     }
 
+    nombreHechizo = string(tipoHechizo[asignarIndice(runaElemental)]);
+    // TO DO: Agregar al nombre del hechizo el apellido del mago
+    nombreHechizo = nombreHechizo + " ";
+    if (longitudCiclo < caminoMasPesado)
+    {
+        nombreHechizo = nombreHechizo + " modicum";
+    }
+    else if (longitudCiclo >= caminoMasPesado)
+    {
+        nombreHechizo = nombreHechizo + " maximus";
+    }
+    // TO DO: Agregar al nombre la palabra Arcante si no se consigue ninguno de estos elementos
     cout << "Hechizo procesado" << endl;
 }
 
 void Entrada(const char *nombreArchivo)
 {
+    Lista<Nodo<string>> hechizosIlegales[7];
+    Lista<Nodo<string>> hechizosIlegales[7];
+
     ifstream archivo(nombreArchivo);
     if (!archivo.is_open())
     {

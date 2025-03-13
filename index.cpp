@@ -414,7 +414,7 @@ float encontrarCaminoMasPesado(Hechizo &hechizo)
     if (puntoConfluencia == -1)
     {
         cout << "No se encontró el punto de confluencia (A)." << endl;
-        return;
+        return pesoMaximo;
     }
 
     DFS_CAMINO_PESADO(hechizo, puntoConfluencia, visitados, aristasVisitadas, 0, pesoMaximo, caminoActual, longitudCaminoActual, caminoMaximo, longitudCaminoMaximo, runasElementalesVisitadas);
@@ -479,6 +479,40 @@ int asignarIndice(char runa)
     }
 }
 
+void modificarApellido(string &apellido)
+{
+    int pos_espacio = 0;
+    string apellido_modificado = "";
+    for (int i = 0; i < apellido.size(); i++)
+    {
+        if (apellido[i] == ' ')
+        {
+            pos_espacio = i;
+            break;
+        }
+    }
+    int j = pos_espacio + 1;
+    while (apellido[j] != '\0')
+    {
+        apellido_modificado.push_back(apellido[j]);
+        j++;
+    }
+
+    int ultimo = apellido_modificado.length() - 1;
+    if (apellido_modificado[ultimo] == 'a' || apellido_modificado[ultimo] == 'e' || apellido_modificado[ultimo] == 'i' || apellido_modificado[ultimo] == 'u')
+    {
+        apellido_modificado.pop_back();
+        apellido_modificado = apellido_modificado + "ium";
+    }
+    else
+    {
+        apellido_modificado.pop_back();
+        apellido_modificado = apellido_modificado + "um";
+    }
+
+    apellido = apellido_modificado;
+}
+
 void procesarHechizo(Hechizo &hechizo)
 {
     cout << "Procesando hechizo de " << hechizo.nombreMago << "..." << endl;
@@ -490,7 +524,10 @@ void procesarHechizo(Hechizo &hechizo)
         cout << "Confluencia invalida" << endl;
     }
 
-    const char* tipoHechizo[] = {"", "Ignatum", "Aquos", "Terraminium", "Ventus", "Lux", "Tenebrae"};
+    // Buscando el apellido del mago para luego ser traducido a nombre de hechizo
+    string apellido = hechizo.nombreMago;
+    modificarApellido(apellido); 
+    const char* tipoHechizo[] = {"", "Ignatum ", "Aquos ", "Terraminium ", "Ventus ", "Lux ", "Tenebrae "};
     string nombreHechizo;
     char runaElemental = '-';
     bool esArcano = false;
@@ -528,23 +565,25 @@ void procesarHechizo(Hechizo &hechizo)
 
     nombreHechizo = string(tipoHechizo[asignarIndice(runaElemental)]);
     // TO DO: Agregar al nombre del hechizo el apellido del mago
-    nombreHechizo = nombreHechizo + " ";
+    nombreHechizo = nombreHechizo + apellido + " ";
     if (longitudCiclo < caminoMasPesado)
     {
-        nombreHechizo = nombreHechizo + " modicum";
+        nombreHechizo = nombreHechizo + "modicum";
     }
     else if (longitudCiclo >= caminoMasPesado)
     {
-        nombreHechizo = nombreHechizo + " maximus";
+        nombreHechizo = nombreHechizo + "maximus";
     }
     // TO DO: Agregar al nombre la palabra Arcante si no se consigue ninguno de estos elementos
+    hechizo.nombreHechizo = nombreHechizo;
+    cout << "Nombre del hechizo: " << hechizo.nombreHechizo << endl;
     cout << "Hechizo procesado" << endl;
 }
 
 void Entrada(const char *nombreArchivo)
 {
     Lista<Nodo<string>> hechizosIlegales[7];
-    Lista<Nodo<string>> hechizosIlegales[7];
+    Lista<Nodo<string>> hechizosLegales[7];
 
     ifstream archivo(nombreArchivo);
     if (!archivo.is_open())

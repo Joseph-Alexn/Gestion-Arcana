@@ -83,6 +83,17 @@ public:
             pop();
         }
     }
+    void print()
+    {
+        if (estaVacia()) 
+            return;
+        Nodo<T> *ptr_aux = this->ptr_primero;
+        while (ptr_aux != nullptr)
+        {
+            cout << ptr_aux->valor.valor << endl;
+            ptr_aux = ptr_aux->ptr_siguiente;
+        }
+    }
 };
 class Arista
 {
@@ -198,11 +209,11 @@ bool confluenciaValida(Hechizo &hechizo)
     return true;
 }
 
-bool excesoRunasElementales(Hechizo &hechizo, char &runaElemental, bool &esArcano)
+bool excesoRunasElementales(Hechizo &hechizo, char &runaElemental, bool &esArcano, bool &tieneCatalitica, bool &tieneEstabilidad)
 {
     const int max = 3;
     int sum = 0;
-    bool flag = false;
+    bool flag = false, flag2 = false, flag3 = false;
     for (int i = 0; i < hechizo.cantidadVertices; i++)
     {
         if (hechizo.obtenerVertice(i).runa != 'F' && hechizo.obtenerVertice(i).runa != 'A' &&
@@ -215,6 +226,24 @@ bool excesoRunasElementales(Hechizo &hechizo, char &runaElemental, bool &esArcan
                 flag = true;
             }
         }
+        if (!flag2)
+        {
+            if (hechizo.obtenerVertice(i).runa == 'F')
+            {
+                tieneEstabilidad = true;
+                flag2 = true;
+            }
+
+        }
+        if (!flag3)
+        {
+            if (hechizo.obtenerVertice(i).runa == 'D')
+            {
+                tieneCatalitica = true;
+                flag3 = true;
+            }
+        }
+
         if (sum > max)
         {
             return true;
@@ -513,7 +542,7 @@ void modificarApellido(string &apellido)
     apellido = apellido_modificado;
 }
 
-void procesarHechizo(Hechizo &hechizo)
+void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hechizosLegales[])
 {
     cout << "Procesando hechizo de " << hechizo.nombreMago << "..." << endl;
 
@@ -527,11 +556,15 @@ void procesarHechizo(Hechizo &hechizo)
     // Buscando el apellido del mago para luego ser traducido a nombre de hechizo
     string apellido = hechizo.nombreMago;
     modificarApellido(apellido); 
+
+    // Arreglo de posibles nombres del hechizo
     const char* tipoHechizo[] = {"", "Ignatum ", "Aquos ", "Terraminium ", "Ventus ", "Lux ", "Tenebrae "};
     string nombreHechizo;
-    char runaElemental = '-';
+    char runaElemental = '-'; // Valor si NO hay runa elemental
     bool esArcano = false;
-    if (excesoRunasElementales(hechizo, runaElemental, esArcano))
+    bool tieneCatalitica = false , tieneEstabilidad = false;
+
+    if (excesoRunasElementales(hechizo, runaElemental, esArcano, tieneCatalitica, tieneEstabilidad))
     {
         esIlegal = true;
         cout << "Exceso de runas elementales" << endl;
@@ -564,22 +597,55 @@ void procesarHechizo(Hechizo &hechizo)
     }
 
     nombreHechizo = string(tipoHechizo[asignarIndice(runaElemental)]);
-    // TO DO: Agregar al nombre del hechizo el apellido del mago
+
     nombreHechizo = nombreHechizo + apellido + " ";
-    if (longitudCiclo < caminoMasPesado)
+    if (!tieneCatalitica && !tieneEstabilidad && runaElemental == '-')
     {
-        nombreHechizo = nombreHechizo + "modicum";
+        nombreHechizo = nombreHechizo + "Arcante";
     }
-    else if (longitudCiclo >= caminoMasPesado)
+    else 
     {
-        nombreHechizo = nombreHechizo + "maximus";
+        if (longitudCiclo < caminoMasPesado)
+        {
+            nombreHechizo = nombreHechizo + "modicum";
+        }
+        else if (longitudCiclo >= caminoMasPesado)
+        {
+            nombreHechizo = nombreHechizo + "maximus";
+        }
     }
-    // TO DO: Agregar al nombre la palabra Arcante si no se consigue ninguno de estos elementos
+    
     hechizo.nombreHechizo = nombreHechizo;
     cout << "Nombre del hechizo: " << hechizo.nombreHechizo << endl;
+    nombreHechizo = nombreHechizo + "\n" + hechizo.nombreMago;
+    if (esIlegal) 
+    {
+        hechizosIlegales[asignarIndice(runaElemental)].insertarFinal(nombreHechizo);
+    }
+    else
+    {
+        hechizosLegales[asignarIndice(runaElemental)].insertarFinal(nombreHechizo);
+    }
     cout << "Hechizo procesado" << endl;
-}
 
+}
+void enviarDatos (Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hechizosLegales[])
+{
+    /*  1. Escribir en el archivo de salida "Hechizos Legales" + endl
+        2. Insertar otro endl
+        3. Insertar cada elemento de la lista de hechizos ilegales
+            for (int i = 0; i < 7; i++)
+            {
+                ARCHIVO_SALIDA << hechizosIlegales[i].print();
+            }
+        4. Insertar otro endl
+        5. Insertar cada elemento de la lista de hechizos ilegales
+            for (int i = 0; i < 7; i++)
+            {
+                ARCHIVO_SALIDA << hechizosIlegales[i].print();
+            }
+    */
+}
 void Entrada(const char *nombreArchivo)
 {
     Lista<Nodo<string>> hechizosIlegales[7];
@@ -645,10 +711,11 @@ void Entrada(const char *nombreArchivo)
                 cout << "Índice de arista fuera de rango: " << vertice1 + 1 << ", " << vertice2 + 1 << endl;
             }
         }
-        procesarHechizo(hechizo);
+        procesarHechizo(hechizo, hechizosIlegales, hechizosLegales);
     }
-
     archivo.close();
+    // Escribir los hechizos legales e ilegales en el archivo
+    enviarDatos(hechizosIlegales, hechizosLegales);
     magosBajoInvestigacion();
 }
 int main()

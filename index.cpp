@@ -94,7 +94,9 @@ public:
             ptr_aux = ptr_aux->ptr_siguiente;
         }
     }
+    
 };
+
 class Arista
 {
 public:
@@ -156,6 +158,19 @@ public:
             return vertices[indice];
         }
     }
+};
+
+class Sospechoso
+{
+public:
+    string nombre;
+    int contadorHechizosIlegales;
+    Sospechoso(string)
+    {
+        this->nombre = nombre;
+        this->contadorHechizosIlegales = 0;
+    }
+
 };
 
 void magosBajoInvestigacion()
@@ -542,7 +557,21 @@ void modificarApellido(string &apellido)
     apellido = apellido_modificado;
 }
 
-void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hechizosLegales[])
+Nodo<Sospechoso>* buscar(Lista<Sospechoso> sospechosos, Sospechoso mago)
+{
+    Nodo<Sospechoso> *ptr_aux = sospechosos.ptr_primero;
+    while (ptr_aux != nullptr)
+    {
+        if (ptr_aux->valor.nombre == mago.nombre)
+            {
+                return ptr_aux;
+            }
+            ptr_aux = ptr_aux->ptr_siguiente;
+    }
+    return nullptr;
+}
+
+void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hechizosLegales[], Lista<Sospechoso> sospechosos)
 {
     cout << "Procesando hechizo de " << hechizo.nombreMago << "..." << endl;
 
@@ -621,6 +650,18 @@ void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], L
     if (esIlegal) 
     {
         hechizosIlegales[asignarIndice(runaElemental)].insertarFinal(nombreHechizo);
+        Sospechoso sospechoso = Sospechoso(hechizo.nombreMago);
+        
+        Nodo<Sospechoso> *ptr_sospechoso = buscar(sospechosos, sospechoso);
+        if (ptr_sospechoso == nullptr)
+        {
+            sospechosos.insertarFinal(sospechoso);
+            sospechosos.ptr_ultimo->valor.contadorHechizosIlegales++;
+        }
+        else
+        {
+            ptr_sospechoso->valor.contadorHechizosIlegales++;
+        }
     }
     else
     {
@@ -646,10 +687,18 @@ void enviarDatos (Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> he
             }
     */
 }
+void actualizarListaInvestigacion (Lista<Sospechoso> sospechosos)
+{
+    //Esta lista de sospechosos pasada por parámetro contiene a todos los magos con al menos un hechizo ilegal
+    // 1.Buscar cada mago en la lista original de underInvestigation.in
+    // 2.Si se encuentra, se pasa al siguiente mago
+    // 3.Si no se encuentra y tiene más de 3 hechizos ilegales se escribe al final del archivo 
+}
 void Entrada(const char *nombreArchivo)
 {
     Lista<Nodo<string>> hechizosIlegales[7];
     Lista<Nodo<string>> hechizosLegales[7];
+    Lista<Sospechoso> sospechosos;
 
     ifstream archivo(nombreArchivo);
     if (!archivo.is_open())
@@ -711,7 +760,7 @@ void Entrada(const char *nombreArchivo)
                 cout << "Índice de arista fuera de rango: " << vertice1 + 1 << ", " << vertice2 + 1 << endl;
             }
         }
-        procesarHechizo(hechizo, hechizosIlegales, hechizosLegales);
+        procesarHechizo(hechizo, hechizosIlegales, hechizosLegales, sospechosos);
     }
     archivo.close();
     // Escribir los hechizos legales e ilegales en el archivo

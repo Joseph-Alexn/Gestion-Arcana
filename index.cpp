@@ -85,7 +85,7 @@ public:
     }
     void print()
     {
-        if (estaVacia()) 
+        if (estaVacia())
             return;
         Nodo<T> *ptr_aux = this->ptr_primero;
         while (ptr_aux != nullptr)
@@ -94,7 +94,6 @@ public:
             ptr_aux = ptr_aux->ptr_siguiente;
         }
     }
-    
 };
 
 class Arista
@@ -170,7 +169,6 @@ public:
         this->nombre = nombre;
         this->contadorHechizosIlegales = 0;
     }
-
 };
 
 void magosBajoInvestigacion()
@@ -248,7 +246,6 @@ bool excesoRunasElementales(Hechizo &hechizo, char &runaElemental, bool &esArcan
                 tieneEstabilidad = true;
                 flag2 = true;
             }
-
         }
         if (!flag3)
         {
@@ -543,30 +540,29 @@ void modificarApellido(string &apellido)
     }
 
     int ultimo = apellido_modificado.length() - 1;
-    if (apellido_modificado[ultimo] == 'a' || apellido_modificado[ultimo] == 'e' || apellido_modificado[ultimo] == 'i' || apellido_modificado[ultimo] == 'u')
+    if (apellido_modificado[ultimo] == 'a' || apellido_modificado[ultimo] == 'e' || apellido_modificado[ultimo] == 'i' || apellido_modificado[ultimo] == 'o' || apellido_modificado[ultimo] == 'u')
     {
         apellido_modificado.pop_back();
-        apellido_modificado = apellido_modificado + "ium";
+        apellido_modificado += "ium";
     }
     else
     {
-        apellido_modificado.pop_back();
-        apellido_modificado = apellido_modificado + "um";
+        apellido_modificado += "um";
     }
 
     apellido = apellido_modificado;
 }
 
-Nodo<Sospechoso>* buscar(Lista<Sospechoso> sospechosos, Sospechoso mago)
+Nodo<Sospechoso> *buscar(Lista<Sospechoso> sospechosos, Sospechoso mago)
 {
     Nodo<Sospechoso> *ptr_aux = sospechosos.ptr_primero;
     while (ptr_aux != nullptr)
     {
         if (ptr_aux->valor.nombre == mago.nombre)
-            {
-                return ptr_aux;
-            }
-            ptr_aux = ptr_aux->ptr_siguiente;
+        {
+            return ptr_aux;
+        }
+        ptr_aux = ptr_aux->ptr_siguiente;
     }
     return nullptr;
 }
@@ -584,14 +580,14 @@ void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], L
 
     // Buscando el apellido del mago para luego ser traducido a nombre de hechizo
     string apellido = hechizo.nombreMago;
-    modificarApellido(apellido); 
+    modificarApellido(apellido);
 
     // Arreglo de posibles nombres del hechizo
-    const char* tipoHechizo[] = {"", "Ignatum ", "Aquos ", "Terraminium ", "Ventus ", "Lux ", "Tenebrae "};
+    const char *tipoHechizo[] = {"", "Ignatum ", "Aquos ", "Terraminium ", "Ventus ", "Lux ", "Tenebrae "};
     string nombreHechizo;
     char runaElemental = '-'; // Valor si NO hay runa elemental
     bool esArcano = false;
-    bool tieneCatalitica = false , tieneEstabilidad = false;
+    bool tieneCatalitica = false, tieneEstabilidad = false;
 
     if (excesoRunasElementales(hechizo, runaElemental, esArcano, tieneCatalitica, tieneEstabilidad))
     {
@@ -632,7 +628,7 @@ void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], L
     {
         nombreHechizo = nombreHechizo + "Arcante";
     }
-    else 
+    else
     {
         if (longitudCiclo < caminoMasPesado)
         {
@@ -643,15 +639,15 @@ void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], L
             nombreHechizo = nombreHechizo + "maximus";
         }
     }
-    
+
     hechizo.nombreHechizo = nombreHechizo;
     cout << "Nombre del hechizo: " << hechizo.nombreHechizo << endl;
     nombreHechizo = nombreHechizo + "\n" + hechizo.nombreMago;
-    if (esIlegal) 
+    if (esIlegal)
     {
         hechizosIlegales[asignarIndice(runaElemental)].insertarFinal(nombreHechizo);
         Sospechoso sospechoso = Sospechoso(hechizo.nombreMago);
-        
+
         Nodo<Sospechoso> *ptr_sospechoso = buscar(sospechosos, sospechoso);
         if (ptr_sospechoso == nullptr)
         {
@@ -668,31 +664,116 @@ void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], L
         hechizosLegales[asignarIndice(runaElemental)].insertarFinal(nombreHechizo);
     }
     cout << "Hechizo procesado" << endl;
+}
+void enviarDatos(Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hechizosLegales[])
+{
+    ofstream archivoSalida("processedSpells.out");
+    if (!archivoSalida.is_open())
+    {
+        cout << "No se pudo abrir el archivo de salida." << endl;
+        return;
+    }
 
+    // Escribir hechizos legales
+    archivoSalida << "Hechizos Legales" << endl
+                  << endl;
+    for (int i = 0; i < 7; i++)
+    {
+        Nodo<Nodo<string>> *ptr_aux = hechizosLegales[i].ptr_primero;
+        while (ptr_aux != nullptr)
+        {
+            archivoSalida << ptr_aux->valor.valor << endl;
+            ptr_aux = ptr_aux->ptr_siguiente;
+        }
+    }
+
+    // Escribir hechizos ilegales
+    archivoSalida << endl
+                  << "Hechizos Ilegales" << endl
+                  << endl;
+    for (int i = 0; i < 7; i++)
+    {
+        Nodo<Nodo<string>> *ptr_aux = hechizosIlegales[i].ptr_primero;
+        while (ptr_aux != nullptr)
+        {
+            archivoSalida << ptr_aux->valor.valor << endl;
+            ptr_aux = ptr_aux->ptr_siguiente;
+        }
+    }
+
+    archivoSalida.close();
 }
-void enviarDatos (Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hechizosLegales[])
+void actualizarListaInvestigacion(Lista<Sospechoso> &sospechosos)
 {
-    /*  1. Escribir en el archivo de salida "Hechizos Legales" + endl
-        2. Insertar otro endl
-        3. Insertar cada elemento de la lista de hechizos ilegales
-            for (int i = 0; i < 7; i++)
+    // Abrir el archivo de investigación en modo lectura
+    ifstream archivoEntrada("underInvestigation.in");
+    if (!archivoEntrada.is_open())
+    {
+        cout << "No se pudo abrir el archivo de investigación." << endl;
+        return;
+    }
+
+    // Leer todas las líneas del archivo y almacenarlas en una lista
+    Lista<string> lineasArchivo;
+    string linea;
+    while (getline(archivoEntrada, linea))
+    {
+        lineasArchivo.insertarFinal(linea);
+    }
+    archivoEntrada.close();
+
+    // Verificar y agregar nuevos sospechosos con más de 3 hechizos ilegales
+    Nodo<Sospechoso> *ptr_sospechoso = sospechosos.ptr_primero;
+    while (ptr_sospechoso != nullptr)
+    {
+        if (ptr_sospechoso->valor.contadorHechizosIlegales > 3)
+        {
+            // Verificar si el sospechoso ya está en la lista
+            bool existe = false;
+            Nodo<string> *ptr_linea = lineasArchivo.ptr_primero;
+            while (ptr_linea != nullptr)
             {
-                ARCHIVO_SALIDA << hechizosIlegales[i].print();
+                if (ptr_linea->valor == ptr_sospechoso->valor.nombre)
+                {
+                    existe = true;
+                    break;
+                }
+                ptr_linea = ptr_linea->ptr_siguiente;
             }
-        4. Insertar otro endl
-        5. Insertar cada elemento de la lista de hechizos ilegales
-            for (int i = 0; i < 7; i++)
+
+            // Si no existe, agregarlo a la lista
+            if (!existe)
             {
-                ARCHIVO_SALIDA << hechizosIlegales[i].print();
+                cout << "Agregando sospechoso: " << ptr_sospechoso->valor.nombre << endl; // Línea de depuración
+                lineasArchivo.insertarFinal(ptr_sospechoso->valor.nombre);
             }
-    */
-}
-void actualizarListaInvestigacion (Lista<Sospechoso> sospechosos)
-{
-    //Esta lista de sospechosos pasada por parámetro contiene a todos los magos con al menos un hechizo ilegal
-    // 1.Buscar cada mago en la lista original de underInvestigation.in
-    // 2.Si se encuentra, se pasa al siguiente mago
-    // 3.Si no se encuentra y tiene más de 3 hechizos ilegales se escribe al final del archivo 
+            else
+            {
+                cout << "El sospechoso " << ptr_sospechoso->valor.nombre << " ya existe." << endl; // Línea de depuración
+            }
+        }
+        ptr_sospechoso = ptr_sospechoso->ptr_siguiente;
+    }
+
+    // Sobrescribir el archivo original con la lista actualizada
+    ofstream archivoSalida("underInvestigation.in");
+    if (!archivoSalida.is_open())
+    {
+        cout << "No se pudo abrir el archivo de investigación para escritura." << endl;
+        return;
+    }
+
+    Nodo<string> *ptr_linea = lineasArchivo.ptr_primero;
+    while (ptr_linea != nullptr)
+    {
+        archivoSalida << ptr_linea->valor << endl;
+        ptr_linea = ptr_linea->ptr_siguiente;
+    }
+
+    archivoSalida.flush(); // Forzar la escritura del buffer
+    archivoSalida.close();
+
+    cout << "Lista de investigación actualizada." << endl;
 }
 void Entrada(const char *nombreArchivo)
 {
@@ -763,8 +844,14 @@ void Entrada(const char *nombreArchivo)
         procesarHechizo(hechizo, hechizosIlegales, hechizosLegales, sospechosos);
     }
     archivo.close();
+
     // Escribir los hechizos legales e ilegales en el archivo
     enviarDatos(hechizosIlegales, hechizosLegales);
+
+    // Actualizar la lista de investigación
+    actualizarListaInvestigacion(sospechosos);
+
+    // Mostrar los magos bajo investigación
     magosBajoInvestigacion();
 }
 int main()

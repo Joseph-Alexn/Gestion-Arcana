@@ -2,6 +2,7 @@
 #include <fstream>
 
 using namespace std;
+
 template <typename T>
 struct Nodo
 {
@@ -99,7 +100,7 @@ public:
 class Arista
 {
 public:
-    int vertice_ady; // Indice del vertice adyacente
+    int vertice_ady;
     float peso;
     Arista *ptr_siguiente;
 
@@ -130,7 +131,7 @@ class Hechizo
 public:
     string nombreMago;
     string nombreHechizo;
-    Vertice *vertices; // Arreglo de vértices
+    Vertice *vertices;
     int cantidadVertices;
 
     Hechizo(int cantidadVertices)
@@ -149,8 +150,7 @@ public:
     {
         if (indice < 0 || indice >= cantidadVertices)
         {
-            cout << "Indice fuera de rango" << endl;
-            return vertices[-1]; // Esto es un error
+            return vertices[-1];
         }
         else
         {
@@ -164,11 +164,8 @@ class Sospechoso
 public:
     string nombre;
     int contadorHechizosIlegales;
-    Sospechoso(string)
-    {
-        this->nombre = nombre;
-        this->contadorHechizosIlegales = 0;
-    }
+
+    Sospechoso(string nombre) : nombre(nombre), contadorHechizosIlegales(0) {}
 };
 
 void magosBajoInvestigacion()
@@ -176,17 +173,12 @@ void magosBajoInvestigacion()
     ifstream archivo("underInvestigation.in");
     if (archivo.is_open())
     {
-        cout << "magos bajo investigacion: " << endl;
         char nombreMago[100];
         while (archivo.getline(nombreMago, 100))
         {
             cout << nombreMago << endl;
         }
         archivo.close();
-    }
-    else
-    {
-        cout << "No se pudo abrir el archivo" << endl;
     }
 }
 
@@ -396,17 +388,17 @@ void DFS_CAMINO_PESADO(Hechizo &hechizo, int verticeActual, bool visitados[], bo
                 if (esRunaElemental(runaAdy) && runasElementalesVisitadas[verticeAdy])
                 {
                     iterador = iterador->ptr_siguiente;
-                    continue; // Saltar esta arista si la runa elemental ya fue visitada
+                    continue;
                 }
 
-                aristasVisitadas[idArista] = true; // Marcar la arista como visitada
+                aristasVisitadas[idArista] = true;
 
                 if (!visitados[verticeAdy])
                 {
                     DFS_CAMINO_PESADO(hechizo, verticeAdy, visitados, aristasVisitadas, pesoAcumulado + pesoArista, pesoMaximo, caminoActual, longitudCaminoActual, caminoMaximo, longitudCaminoMaximo, runasElementalesVisitadas);
                 }
 
-                aristasVisitadas[idArista] = false; // Desmarcar la arista al retroceder
+                aristasVisitadas[idArista] = false;
             }
         }
         iterador = iterador->ptr_siguiente;
@@ -452,27 +444,15 @@ float encontrarCaminoMasPesado(Hechizo &hechizo)
         }
     }
 
-    if (puntoConfluencia == -1)
-    {
-        cout << "No se encontró el punto de confluencia (A)." << endl;
-        return pesoMaximo;
-    }
-
     DFS_CAMINO_PESADO(hechizo, puntoConfluencia, visitados, aristasVisitadas, 0, pesoMaximo, caminoActual, longitudCaminoActual, caminoMaximo, longitudCaminoMaximo, runasElementalesVisitadas);
 
     if (longitudCaminoMaximo > 0)
     {
-        cout << "Camino mas pesado encontrado con peso: " << pesoMaximo << endl;
-        cout << "Camino: ";
         for (int i = 0; i < longitudCaminoMaximo; i++)
         {
             cout << caminoMaximo[i] + 1 << " ";
         }
         cout << endl;
-    }
-    else
-    {
-        cout << "No se encontró ningún camino válido en el grafo." << endl;
     }
 
     delete[] visitados;
@@ -482,39 +462,34 @@ float encontrarCaminoMasPesado(Hechizo &hechizo)
     delete[] caminoMaximo;
     return pesoMaximo;
 }
-// Si es ilegal se agrega al arreglo de hechizos ilegales
-// En caso contrario, se agrega el de hechizos legales
-// Cada arreglo contiene una lista de hechizos en cada vertice
-// Cada posicion es un tipo de hechizo
-// 0 Arcano - 1 Fuego - 2 Agua - 3 Tierra - 4 Aire - 5 Luz - 6 Oscuridad
 
 int asignarIndice(char runa)
 {
-    if (runa == '-') // Es arcano
+    if (runa == '-')
     {
         return 0;
     }
-    else if (runa == 'I') // Es de fuego
+    else if (runa == 'I')
     {
         return 1;
     }
-    else if (runa == 'Q') // Es de agua
+    else if (runa == 'Q')
     {
         return 2;
     }
-    else if (runa == 'T') // Es de tierra
+    else if (runa == 'T')
     {
         return 3;
     }
-    else if (runa == 'V') // Es de aire
+    else if (runa == 'V')
     {
         return 4;
     }
-    else if (runa == 'L') // Es de luz
+    else if (runa == 'L')
     {
         return 5;
     }
-    else // Es de oscuridad
+    else
     {
         return 6;
     }
@@ -569,57 +544,39 @@ Nodo<Sospechoso> *buscar(Lista<Sospechoso> sospechosos, Sospechoso mago)
 
 void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hechizosLegales[], Lista<Sospechoso> sospechosos)
 {
-    cout << "Procesando hechizo de " << hechizo.nombreMago << "..." << endl;
-
     bool esIlegal = false;
     if (!confluenciaValida(hechizo))
     {
         esIlegal = true;
-        cout << "Confluencia invalida" << endl;
     }
 
-    // Buscando el apellido del mago para luego ser traducido a nombre de hechizo
     string apellido = hechizo.nombreMago;
     modificarApellido(apellido);
 
-    // Arreglo de posibles nombres del hechizo
     const char *tipoHechizo[] = {"", "Ignatum ", "Aquos ", "Terraminium ", "Ventus ", "Lux ", "Tenebrae "};
     string nombreHechizo;
-    char runaElemental = '-'; // Valor si NO hay runa elemental
+    char runaElemental = '-';
     bool esArcano = false;
     bool tieneCatalitica = false, tieneEstabilidad = false;
 
     if (excesoRunasElementales(hechizo, runaElemental, esArcano, tieneCatalitica, tieneEstabilidad))
     {
         esIlegal = true;
-        cout << "Exceso de runas elementales" << endl;
     }
 
     if (!runasCataliticasValidas(hechizo))
     {
         esIlegal = true;
-        cout << "Runas cataliticas invalidas" << endl;
     }
 
     int longitudCiclo = encontrarCicloMasLargo(hechizo, 0);
-    cout << "Longitud del ciclo mas largo: " << longitudCiclo << endl;
 
     if (longitudCiclo % 2 != 0)
     {
         esIlegal = true;
-        cout << "Ciclo de longitud impar" << endl;
     }
 
     float caminoMasPesado = encontrarCaminoMasPesado(hechizo);
-
-    if (esIlegal)
-    {
-        cout << "El hechizo es ilegal." << endl;
-    }
-    else
-    {
-        cout << "El hechizo es legal." << endl;
-    }
 
     nombreHechizo = string(tipoHechizo[asignarIndice(runaElemental)]);
 
@@ -641,7 +598,6 @@ void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], L
     }
 
     hechizo.nombreHechizo = nombreHechizo;
-    cout << "Nombre del hechizo: " << hechizo.nombreHechizo << endl;
     nombreHechizo = nombreHechizo + "\n" + hechizo.nombreMago;
     if (esIlegal)
     {
@@ -663,18 +619,15 @@ void procesarHechizo(Hechizo &hechizo, Lista<Nodo<string>> hechizosIlegales[], L
     {
         hechizosLegales[asignarIndice(runaElemental)].insertarFinal(nombreHechizo);
     }
-    cout << "Hechizo procesado" << endl;
 }
 void enviarDatos(Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hechizosLegales[])
 {
     ofstream archivoSalida("processedSpells.out");
     if (!archivoSalida.is_open())
     {
-        cout << "No se pudo abrir el archivo de salida." << endl;
         return;
     }
 
-    // Escribir hechizos legales
     archivoSalida << "Hechizos Legales" << endl
                   << endl;
     for (int i = 0; i < 7; i++)
@@ -687,7 +640,6 @@ void enviarDatos(Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hec
         }
     }
 
-    // Escribir hechizos ilegales
     archivoSalida << endl
                   << "Hechizos Ilegales" << endl
                   << endl;
@@ -703,17 +655,14 @@ void enviarDatos(Lista<Nodo<string>> hechizosIlegales[], Lista<Nodo<string>> hec
 
     archivoSalida.close();
 }
-void actualizarListaInvestigacion(Lista<Sospechoso> &sospechosos)
+void actualizarListaInvestigacion(Lista<Sospechoso> sospechosos)
 {
-    // Abrir el archivo de investigación en modo lectura
     ifstream archivoEntrada("underInvestigation.in");
     if (!archivoEntrada.is_open())
     {
-        cout << "No se pudo abrir el archivo de investigación." << endl;
         return;
     }
 
-    // Leer todas las líneas del archivo y almacenarlas en una lista
     Lista<string> lineasArchivo;
     string linea;
     while (getline(archivoEntrada, linea))
@@ -722,13 +671,11 @@ void actualizarListaInvestigacion(Lista<Sospechoso> &sospechosos)
     }
     archivoEntrada.close();
 
-    // Verificar y agregar nuevos sospechosos con más de 3 hechizos ilegales
     Nodo<Sospechoso> *ptr_sospechoso = sospechosos.ptr_primero;
     while (ptr_sospechoso != nullptr)
     {
         if (ptr_sospechoso->valor.contadorHechizosIlegales > 3)
         {
-            // Verificar si el sospechoso ya está en la lista
             bool existe = false;
             Nodo<string> *ptr_linea = lineasArchivo.ptr_primero;
             while (ptr_linea != nullptr)
@@ -741,25 +688,17 @@ void actualizarListaInvestigacion(Lista<Sospechoso> &sospechosos)
                 ptr_linea = ptr_linea->ptr_siguiente;
             }
 
-            // Si no existe, agregarlo a la lista
             if (!existe)
             {
-                cout << "Agregando sospechoso: " << ptr_sospechoso->valor.nombre << endl; // Línea de depuración
                 lineasArchivo.insertarFinal(ptr_sospechoso->valor.nombre);
-            }
-            else
-            {
-                cout << "El sospechoso " << ptr_sospechoso->valor.nombre << " ya existe." << endl; // Línea de depuración
             }
         }
         ptr_sospechoso = ptr_sospechoso->ptr_siguiente;
     }
 
-    // Sobrescribir el archivo original con la lista actualizada
     ofstream archivoSalida("underInvestigation.in");
     if (!archivoSalida.is_open())
     {
-        cout << "No se pudo abrir el archivo de investigación para escritura." << endl;
         return;
     }
 
@@ -770,11 +709,10 @@ void actualizarListaInvestigacion(Lista<Sospechoso> &sospechosos)
         ptr_linea = ptr_linea->ptr_siguiente;
     }
 
-    archivoSalida.flush(); // Forzar la escritura del buffer
+    archivoSalida.flush();
     archivoSalida.close();
-
-    cout << "Lista de investigación actualizada." << endl;
 }
+
 void Entrada(const char *nombreArchivo)
 {
     Lista<Nodo<string>> hechizosIlegales[7];
@@ -782,11 +720,6 @@ void Entrada(const char *nombreArchivo)
     Lista<Sospechoso> sospechosos;
 
     ifstream archivo(nombreArchivo);
-    if (!archivo.is_open())
-    {
-        cout << "No se pudo abrir el archivo" << endl;
-        exit(1);
-    }
 
     int numeroGrafos;
     archivo >> numeroGrafos;
@@ -819,14 +752,7 @@ void Entrada(const char *nombreArchivo)
             int vertice1, vertice2;
             float peso;
 
-            cout << "Leyendo arista #" << j + 1 << "..." << endl;
             archivo >> vertice1 >> vertice2 >> peso;
-
-            if (archivo.fail())
-            {
-                cout << "Error al leer los datos de la arista" << endl;
-                exit(1);
-            }
 
             vertice1--;
             vertice2--;
@@ -836,22 +762,15 @@ void Entrada(const char *nombreArchivo)
                 hechizo.obtenerVertice(vertice1).aristas.insertarFinal(Arista(vertice2, peso));
                 hechizo.obtenerVertice(vertice2).aristas.insertarFinal(Arista(vertice1, peso));
             }
-            else
-            {
-                cout << "Índice de arista fuera de rango: " << vertice1 + 1 << ", " << vertice2 + 1 << endl;
-            }
         }
         procesarHechizo(hechizo, hechizosIlegales, hechizosLegales, sospechosos);
     }
     archivo.close();
 
-    // Escribir los hechizos legales e ilegales en el archivo
     enviarDatos(hechizosIlegales, hechizosLegales);
 
-    // Actualizar la lista de investigación
     actualizarListaInvestigacion(sospechosos);
 
-    // Mostrar los magos bajo investigación
     magosBajoInvestigacion();
 }
 int main()

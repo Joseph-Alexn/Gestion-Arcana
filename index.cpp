@@ -174,10 +174,6 @@ void magosBajoInvestigacion()
     if (archivo.is_open())
     {
         char nombreMago[100];
-        while (archivo.getline(nombreMago, 100))
-        {
-            cout << nombreMago << endl;
-        }
         archivo.close();
     }
 }
@@ -445,15 +441,6 @@ float encontrarCaminoMasPesado(Hechizo &hechizo)
     }
 
     DFS_CAMINO_PESADO(hechizo, puntoConfluencia, visitados, aristasVisitadas, 0, pesoMaximo, caminoActual, longitudCaminoActual, caminoMaximo, longitudCaminoMaximo, runasElementalesVisitadas);
-
-    if (longitudCaminoMaximo > 0)
-    {
-        for (int i = 0; i < longitudCaminoMaximo; i++)
-        {
-            cout << caminoMaximo[i] + 1 << " ";
-        }
-        cout << endl;
-    }
 
     delete[] visitados;
     delete[] aristasVisitadas;
